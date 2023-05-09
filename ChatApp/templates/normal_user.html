@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Status</title>
+    <style>
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .online {
+            background-color: green;
+        }
+        .offline {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Status</h1>
+    <div>
+        <span>Status: </span>
+        <span class="dot"></span>
+        <span class="status">Offline</span>
+    </div>
+    <script>
+        if (navigator.onLine) {
+            const dotElement = document.querySelector('.dot');
+            dotElement.classList.remove('offline');
+            dotElement.classList.add('online');
+            const statusElement = document.querySelector('.status');
+            statusElement.textContent = 'Online';
+        }
+
+        window.addEventListener('online', () => {
+            const dotElement = document.querySelector('.dot');
+            dotElement.classList.remove('offline');
+            dotElement.classList.add('online');
+            const statusElement = document.querySelector('.status');
+            statusElement.textContent = 'Online';
+        });
+        
+        window.addEventListener('offline', () => {
+            const dotElement = document.querySelector('.dot');
+            dotElement.classList.remove('online');
+            dotElement.classList.add('offline');
+            const statusElement = document.querySelector('.status');
+            statusElement.textContent = 'Offline';
+        });
+    </script>
+</body>
+</html>

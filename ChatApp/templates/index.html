@@ -1,0 +1,297 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Create Chat Room</title>
+    <style>
+        body{
+            background-image: linear-gradient(to right, #ee9ca7 ,#ffdde1);
+        }
+        .card-header {
+            font-size: 24px;
+        }
+        .list-group-item:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">Create a new chat room</div>
+            <div class="card-body">
+                <form id="create-room-form">
+                    <div class="form-group">
+                        <label for="room-name-input" name ="name">Room name:</label>
+                        <input id="room-name-input" type="text" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </form>
+            </div>
+        </div>
+    
+        <div class="card mt-4">
+            <div class="card-header">Existing chat rooms</div>
+            <div class="card-body">
+                <ul id="room-list" class="list-group">
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelector('#create-room-form').onsubmit = function(e) {
+            e.preventDefault();
+            var roomName = document.querySelector('#room-name-input').value;
+            fetch('/chat/api/rooms/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: roomName })
+            })
+            .then(response => {
+               
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to create chat room');
+                }
+            })
+            
+            .then(data => {
+                var roomList = document.querySelector('#room-list');
+                var roomLink = document.createElement('a');
+                roomLink.href = '/chat/' + data.name + '/';
+                roomLink.textContent = data.name;
+                var addUserButton = document.createElement('button');
+                addUserButton.textContent = 'Add User';
+                addUserButton.style.backgroundColor = '#007bff';
+                addUserButton.style.color = 'white';
+                addUserButton.style.border = 'none';
+                addUserButton.style.borderColor = '#007bff';
+                addUserButton.style.borderRadius = '10px';
+                addUserButton.style.padding = '5px';
+                addUserButton.style.float = 'right'; // set float to right
+                addUserButton.onclick = function() {
+                // fetch the list of users from the server
+                fetch('/chat/api/users/')
+                    .then(response => response.json())
+                    .then(users => {
+                        // create a modal to display the list of users
+                    var modal = document.createElement('div');
+                    modal.classList.add('modal');
+                    modal.innerHTML = `
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Select User</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul id="user-list" class="list-group">
+                                        ${users.map(user => `
+                                            <li class="list-group-item">
+                                                <input type="checkbox" name="users[]" value="${user.id}">
+                                                ${user.fullname}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" id="add-users-button">Add Users</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            document.body.appendChild(modal);
+            // initialize the modal using Bootstrap's modal plugin
+            $(modal).modal();
+            
+            var addUserButtons = document.querySelectorAll('button');
+
+                    // loop through each button
+                    for (var i = 0; i < addUserButtons.length; i++) {
+                    var button = addUserButtons[i];
+
+                    // add a click event listener to the button
+                    button.addEventListener('click', function(event) {
+
+                        // get the parent li element of the button
+                        var liElement = event.target.parentNode;
+
+                        // get the link element inside the li element
+                        var linkElement = liElement.querySelector('a');
+
+                        // get the href attribute value of the link element
+
+
+                        // get the text content of the link element
+                        var linkText = linkElement.textContent;
+
+                        // log the href and text content
+                        console.log(linkText);
+                    });
+                    }
+
+
+            // handle the user selection
+            var addUsersButton = modal.querySelector('#add-users-button');
+            addUsersButton.addEventListener('click', function(event) {
+                var selectedUsers = modal.querySelectorAll('input[name="users[]"]:checked');
+                var selectedUserIds = [];
+                for (var i = 0; i < selectedUsers.length; i++) {
+                    selectedUserIds.push(selectedUsers[i].value);
+                }
+                alert(`${selectedUserIds.length} users added to the chat room`);
+                // you can write the logic here for adding the selected users to the chat room
+                $(modal).modal('hide'); // hide the modal
+            });
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Failed to fetch user list');
+        });
+};
+                var roomItem = document.createElement('li');
+                roomItem.classList.add('list-group-item');
+                roomItem.appendChild(roomLink);
+                roomItem.appendChild(addUserButton);
+                roomList.appendChild(roomItem);
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Failed to create chat room');
+            });
+            return false;
+        };
+    
+        // Fetch existing chat rooms from server
+        fetch('/chat/api/rooms/')
+            .then(response => response.json())
+            .then(data => {
+                var roomList = document.querySelector('#room-list');
+                for (var i = 0; i < data.length; i++) {
+                    var roomName = data[i];
+                    var roomLink = document.createElement('a');
+                    roomLink.href = '/chat/' + roomName + '/';
+                    roomLink.textContent = roomName;
+                    var addUserButton = document.createElement('button');
+                    addUserButton.textContent = 'Add User';
+                    addUserButton.style.backgroundColor = '#007bff';
+                    addUserButton.style.color = 'white';
+                    addUserButton.style.border = 'none';
+                    addUserButton.style.borderColor = '#007bff';
+                    addUserButton.style.borderRadius = '10px';
+                    addUserButton.style.padding = '5px';
+                    addUserButton.style.float = 'right'; // set float to right
+
+                    addUserButton.onclick = (function(roomName) {
+    return function() {
+        // fetch the list of users from the server
+        fetch('/chat/api/users/')
+            .then(response => response.json())
+            .then(users => {
+                // create a modal to display the list of users
+                var modal = document.createElement('div');
+                modal.classList.add('modal');
+                modal.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Select User</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <ul id="user-list" class="list-group">
+                                ${users.map(user => `
+                                    <li class="list-group-item">
+                                    <input type="checkbox" name="users[]" value="${user.id}">
+                                    ${user.fullname}
+                                    </li>
+                                `).join('')}
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="add-users-button">Add Users</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                // initialize the modal using Bootstrap's modal plugin
+                $(modal).modal();
+                // handle the user
+                console.log()
+                var addUsersButton = modal.querySelector('#add-users-button');
+                addUsersButton.addEventListener('click', function(event) {
+                var selectedUsers = modal.querySelectorAll('input[name="users[]"]:checked');
+                
+                    var selectedUserIds = []
+                    for (var i = 0; i < selectedUsers.length; i++) {
+                        selectedUserIds.push(selectedUsers[i].nextSibling.textContent.trim());
+                    }
+                    // you can write the logic here for adding the selected users to the chat room
+                    $(modal).modal('hide'); // hide the modal
+                    console.log(selectedUserIds)
+                    var xhr = new XMLHttpRequest();
+                        xhr.open('POST', 'api/rooms/');
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                console.log(xhr.responseText);
+                            }
+                            else {
+                                console.error(xhr.statusText);
+                            }
+                        };
+                        xhr.onerror = function() {
+                            console.error(xhr.statusText);
+                        };
+                        
+                        xhr.send(JSON.stringify({'user_ids': selectedUserIds, "roomanme":roomName}));
+                        alert(`${selectedUserIds.length} users dded to the chat room`);
+
+                        });
+                    })
+                
+                    .catch(error => {
+                        console.error(error);
+                        alert('Failed to fetch user list');
+                    });
+                    };
+            })(roomName);
+    var roomItem = document.createElement('li');
+                        roomItem.classList.add('list-group-item');
+                        roomItem.appendChild(roomLink);
+                        roomItem.appendChild(addUserButton);
+                        roomList.appendChild(roomItem);
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert('Failed to fetch chat rooms');
+                        });
+
+                        
+
+    </script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
+
