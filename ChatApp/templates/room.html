@@ -58,20 +58,23 @@
         }
 
     </style>
+               
 </head>
 <body>
-    <!-- <div>
-     <span>Status: </span>
-        <span class="dot">{{ username|json_script:"username" }} </span>
-        <span class="status">Offline</span>
-    </div> -->
-    <textarea 
+    <!-- In your HTML body: -->
+    <!-- Connected users: <span id="connected-users"></span><br>
+    Disconnected users: <span id="disconnected-users"></span><br> -->
+    <p id="status"></p>
+    <p id="username"></p>
+
+    <textarea
     id="chat-log"></textarea><br>
     <input id="chat-message-input" type="text" placeholder="Type your message...">
     <button id="chat-message-submit">Send</button>
     <div id="status-icon"></div>
     {{ room_name|json_script:"room-name" }}
     {{ username|json_script:"username" }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
         const chatSocket = new WebSocket(
@@ -83,14 +86,13 @@
         );
         chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
+        console.log(data)
         if (navigator.onLine){
             document.querySelector('#chat-log').value += (data.username + " Online"+ ': ' + data.message + '\n');
         } else {
             document.querySelector('#chat-log').value += (data.username + " Offine"+ ': ' + data.message + '\n');
         };
         }
-        
-    
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
@@ -106,7 +108,6 @@
             const message = messageInputDom.value;
             const username = "{{ user.username }}"; // get the username from the user model
             console.log("2nd=====<>", username, message);
-
             if (chatSocket.readyState === WebSocket.OPEN) {
                 chatSocket.send(JSON.stringify({
                 'message': message,
@@ -118,30 +119,17 @@
             chatSocket.onerror = function(e) {
             console.error('WebSocket error:', e);
             };
-
-        // if ( ) {
-        //     const dotElement = document.querySelector('.dot');
-        //     dotElement.classList.remove('offline');
-        //     dotElement.classList.add('online');
-        //     const statusElement = document.querySelector('.status');
-        //     statusElement.textContent = 'Online';
-        // }
-
-        // window.addEventListener('online', () => {
-        //     const dotElement = document.querySelector('.dot');
-        //     dotElement.classList.remove('offline');
-        //     dotElement.classList.add('online');
-        //     const statusElement = document.querySelector('.status');
-        //     statusElement.textContent = 'Online';
-        // });
-        
-        // window.addEventListener('offline', () => {
-        //     const dotElement = document.querySelector('.dot');
-        //     dotElement.classList.remove('online');
-        //     dotElement.classList.add('offline');
-        //     const statusElement = document.querySelector('.status');
-        //     statusElement.textContent = 'Offline';
-        // });
-    </script>    
+        $(document).ready(function() {
+            $.ajax({
+                url: '/user_status/' + roomName,
+                dataType: 'json',
+                success: function(data) {
+                    $("#status").text(data.status);
+                    $("#username").text(data.username);
+                }
+            });
+        }); 
+</script>
+       
 </body>
 </html>

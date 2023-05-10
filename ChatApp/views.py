@@ -8,6 +8,8 @@ import json
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login
+from django.shortcuts import render
+from .consumers import connected_users
 
 
 
@@ -43,7 +45,7 @@ def signup(request):
     else:
         return render(request, 'signup.html')
     
-    
+
 @user_passes_test(lambda user: user.is_staff,login_url='/user')
 def index(request):
     return render(request, "index.html")
@@ -130,3 +132,25 @@ def add_roomName(request):
 
     # return a JSON response
     return JsonResponse({'success': True})
+
+from django.core import serializers
+from django.http import JsonResponse
+from django.views.decorators.cache import cache_control
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def user_status(request, room_name):
+    pro_obj = Profile.objects.filter(roomName=room_name, is_verified=True).first()
+    if pro_obj:
+        username = pro_obj.fullname
+        print(username)
+        response_data = {
+        'status': 'online',
+        'username': username,
+        }
+    else:
+        response_data = {
+        'status': 'offline',
+         'username': username,
+        }
+    return JsonResponse(response_data)

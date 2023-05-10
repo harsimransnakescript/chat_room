@@ -12,4 +12,5 @@ urlpatterns = [
     path('chat/api/rooms/',chat_room_view,name='chat/api/rooms/'),
     path('chat/api/users/',user_list_View,name = 'chat/api/users/'),
     path('chat/api/add-room-name/',add_roomName,name='chat/api/add-room-name/'),
+    path('user_status/<str:room_name>', user_status,name="user_status"),
 ]
