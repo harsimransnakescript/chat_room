@@ -34,6 +34,7 @@ CSRF_TRUSTED_ORIGINS = ['https://5e4a-49-43-100-135.ngrok-free.app']
 
 INSTALLED_APPS = [
     'daphne',
+    "channels",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,6 +75,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Project_Chat.wsgi.application'
 
 ASGI_APPLICATION = "Project_Chat.asgi.application"
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",

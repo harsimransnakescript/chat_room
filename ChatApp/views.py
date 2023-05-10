@@ -19,6 +19,7 @@ def login(request):
         user_obj = authenticate(username=username, password=password)
         if user_obj:
             auth_login(request, user_obj)
+            print(user_obj)
             return redirect('index')
         else:
             messages.error(request, 'Invalid username or password')
@@ -41,6 +42,8 @@ def signup(request):
 
     else:
         return render(request, 'signup.html')
+    
+    
 @user_passes_test(lambda user: user.is_staff,login_url='/user')
 def index(request):
     return render(request, "index.html")
@@ -54,26 +57,40 @@ def room(request, room_name):
     return render(request, "room.html", {"room_name": room_name, "username": username})
 
 def normal_user_View(request):
-    return render(request, "normal_user.html")
+    username = request.user
+    user_obj = User.objects.filter(username=username).first()
+    if user_obj:
+        user_id = user_obj.id
+        pro_obj = Profile.objects.filter(user_id=user_id).first()
+        room_name = pro_obj.roomName
+        if room_name:
+             data = [{'roomname': room_name},]
+        else:
+            data = ''
+        data = {"data": data}
+    return render(request, "normal_user.html" , data)
 
 @csrf_exempt
 def chat_room_view(request):
     if request.method == 'POST':
         try:
             body = json.loads(request.body)
-            print(body)
+            print("===>",body)
             room_name = body.get('name')
             if room_name:
                 room = Room.objects.create(name=room_name)
                 data = {'name': room.name}
                 return JsonResponse(data)
             else:
-                room_name = body.get('roomanme')
+                roomname = body.get('roomanme')
                 full_names = body.get('user_ids') 
                 for fullname in full_names:
+                     print(fullname)
                      pro_obj = Profile.objects.filter(fullname =fullname).first()
-                     pro_obj.roomName = room_name
+                     pro_obj.roomName = roomname
                      pro_obj.save()
+                data = {'name': roomname}
+                return JsonResponse(data)
         except Exception as e:
             return HttpResponseBadRequest('Failed to create chat room')
     elif request.method == 'GET':
@@ -87,7 +104,6 @@ def chat_room_view(request):
 def user_list_View(request):
     users = Profile.objects.all().values('fullname')
     return JsonResponse(list(users), safe=False)
-
 
 def add_roomName(request):
     # get the current user's profile

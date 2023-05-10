@@ -116,33 +116,6 @@
             // initialize the modal using Bootstrap's modal plugin
             $(modal).modal();
             
-            var addUserButtons = document.querySelectorAll('button');
-
-                    // loop through each button
-                    for (var i = 0; i < addUserButtons.length; i++) {
-                    var button = addUserButtons[i];
-
-                    // add a click event listener to the button
-                    button.addEventListener('click', function(event) {
-
-                        // get the parent li element of the button
-                        var liElement = event.target.parentNode;
-
-                        // get the link element inside the li element
-                        var linkElement = liElement.querySelector('a');
-
-                        // get the href attribute value of the link element
-
-
-                        // get the text content of the link element
-                        var linkText = linkElement.textContent;
-
-                        // log the href and text content
-                        console.log(linkText);
-                    });
-                    }
-
-
             // handle the user selection
             var addUsersButton = modal.querySelector('#add-users-button');
             addUsersButton.addEventListener('click', function(event) {
@@ -271,7 +244,7 @@
                     });
                     };
             })(roomName);
-    var roomItem = document.createElement('li');
+                        var roomItem = document.createElement('li');
                         roomItem.classList.add('list-group-item');
                         roomItem.appendChild(roomLink);
                         roomItem.appendChild(addUserButton);
@@ -294,4 +267,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   </body>
 </html>
-

@@ -41,69 +41,39 @@
             margin: 4px 2px;
             cursor: pointer;
         }
+        .dot {
+            height: 10px;
+            width: 10px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .online {
+            background-color: #4CAF50;
+        }
+
+        .offline {
+            background-color: #bbb;
+        }
+
     </style>
 </head>
 <body>
-    <textarea id="chat-log"></textarea><br>
+    <!-- <div>
+     <span>Status: </span>
+        <span class="dot">{{ username|json_script:"username" }} </span>
+        <span class="status">Offline</span>
+    </div> -->
+    <textarea 
+    id="chat-log"></textarea><br>
     <input id="chat-message-input" type="text" placeholder="Type your message...">
     <button id="chat-message-submit">Send</button>
+    <div id="status-icon"></div>
     {{ room_name|json_script:"room-name" }}
     {{ username|json_script:"username" }}
     <script>
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
-        const chatSocket = new WebSocket(
-            'wss://'
-            + window.location.host
-            + '/ws/chat/'
-            + roomName
-            + '/'
-        );
-    
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            console.log(data.username, data.message)
-            document.querySelector('#chat-log').value += (data.username + ': ' + data.message + '\n');
-        };
-    
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-    
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
-    
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            const username = "{{ user.username }}"; // get the username from the user model
-            console.log(username, message)
-            chatSocket.send(JSON.stringify({
-                'message': message,
-                'username': username,
-            }));
-            messageInputDom.value = '';
-        };
-    </script>
-    
-
-
-
-
-
-
-
-
-
-
-<!--
-
-    <script>
-        const roomName = JSON.parse(document.getElementById('room-name').textContent);
-
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
@@ -111,32 +81,67 @@
             + roomName
             + '/'
         );
-
         chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+        const data = JSON.parse(e.data);
+        if (navigator.onLine){
+            document.querySelector('#chat-log').value += (data.username + " Online"+ ': ' + data.message + '\n');
+        } else {
+            document.querySelector('#chat-log').value += (data.username + " Offine"+ ': ' + data.message + '\n');
         };
-
+        }
+        
+    
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
-
+    
         document.querySelector('#chat-message-input').focus();
         document.querySelector('#chat-message-input').onkeyup = function(e) {
             if (e.keyCode === 13) {  // enter, return
                 document.querySelector('#chat-message-submit').click();
             }
         };
-
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
-        };
-    </script>
-    -->
+            const username = "{{ user.username }}"; // get the username from the user model
+            console.log("2nd=====<>", username, message);
+
+            if (chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                'message': message,
+                'username': username,
+                }));
+                messageInputDom.value = '';
+            }
+            },
+            chatSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+            };
+
+        // if ( ) {
+        //     const dotElement = document.querySelector('.dot');
+        //     dotElement.classList.remove('offline');
+        //     dotElement.classList.add('online');
+        //     const statusElement = document.querySelector('.status');
+        //     statusElement.textContent = 'Online';
+        // }
+
+        // window.addEventListener('online', () => {
+        //     const dotElement = document.querySelector('.dot');
+        //     dotElement.classList.remove('offline');
+        //     dotElement.classList.add('online');
+        //     const statusElement = document.querySelector('.status');
+        //     statusElement.textContent = 'Online';
+        // });
+        
+        // window.addEventListener('offline', () => {
+        //     const dotElement = document.querySelector('.dot');
+        //     dotElement.classList.remove('online');
+        //     dotElement.classList.add('offline');
+        //     const statusElement = document.querySelector('.status');
+        //     statusElement.textContent = 'Offline';
+        // });
+    </script>    
 </body>
 </html>
