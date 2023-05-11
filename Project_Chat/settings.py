@@ -147,3 +147,13 @@ CELERY_TASK_SERIALIZER='json'
 
 # set the celery timezone
 CELERY_TIMEZONE = 'UTC'
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+# settings.py
+
+CORS_ORIGIN_WHITELIST = [
+    'https://edd5-2401-4900-1f32-611b-1c88-c3e2-49f-1941.ngrok-free.app'
+    # Add any other trusted origins here
+]
+CSRF_TRUSTED_ORIGINS = ['https://edd5-2401-4900-1f32-611b-1c88-c3e2-49f-1941.ngrok-free.app']

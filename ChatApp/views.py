@@ -138,19 +138,21 @@ from django.http import JsonResponse
 from django.views.decorators.cache import cache_control
 
 
+from django.http import JsonResponse
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_status(request, room_name):
-    pro_obj = Profile.objects.filter(roomName=room_name, is_verified=True).first()
-    if pro_obj:
-        username = pro_obj.fullname
-        print(username)
-        response_data = {
-        'status': 'online',
-        'username': username,
-        }
-    else:
-        response_data = {
-        'status': 'offline',
-         'username': username,
-        }
+    online_pro_objs = Profile.objects.filter(roomName=room_name, is_verified=True)
+    online_usernames = [pro_obj.fullname for pro_obj in online_pro_objs]
+
+    offline_pro_objs = Profile.objects.filter(roomName=room_name, is_verified=False)
+    offline_usernames = [pro_obj.fullname for pro_obj in offline_pro_objs]
+
+   
+    response_data = {
+        'status': {'online' : online_usernames },
+        'status1': {'offline' : offline_usernames },
+    }
+    print(response_data)
     return JsonResponse(response_data)
