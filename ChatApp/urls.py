@@ -13,4 +13,5 @@ urlpatterns = [
     path('chat/api/users/',user_list_View,name = 'chat/api/users/'),
     path('chat/api/add-room-name/',add_roomName,name='chat/api/add-room-name/'),
     path('user_status/<str:room_name>', user_status,name="user_status"),
+    path('add_user/', add_user_to_chat, name='add_user'),
 ]

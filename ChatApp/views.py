@@ -156,3 +156,24 @@ def user_status(request, room_name):
     }
     print(response_data)
     return JsonResponse(response_data)
+
+@csrf_exempt
+def add_user_to_chat(request):
+    response_data = {}
+    if request.method == 'POST':
+        fullname = request.POST.get('fullname') 
+        roomName = request.POST.get('roomname')
+        # Get the user and chat room 
+        pro_obj = Profile.objects.filter(fullname=fullname).first()
+        if pro_obj:
+            pro_obj.roomName = roomName
+            pro_obj.save()
+            response_data = {
+                "message":f"{fullname}  is added in {roomName} Room"
+            }
+        else:
+            response_data = {
+                "message":"User Not found"
+            }
+        print(response_data)
+    return JsonResponse(response_data)

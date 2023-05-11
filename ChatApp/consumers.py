@@ -1,12 +1,10 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Profile
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
 
 
 connected_users = {}
-
-
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -27,12 +25,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         else:
             connected_users[user_id].append(self.channel_name)
 
-
         pro_obj = await sync_to_async(Profile.objects.filter(user_id=user_id).first)()
         pro_obj.is_verified = True
         await sync_to_async(pro_obj.save)()
         print(f"User {user_id} connected from WebSocket", )
- 
+
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -46,7 +43,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             pro_obj.is_verified = False
             await sync_to_async(pro_obj.save)()
             connected_users[user_id].remove(self.channel_name)
-           
+        
 
         print(f"User {user_id} disconnected from WebSocket")
 
@@ -54,21 +51,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-     
         message = text_data_json["message"]
         username = self.scope["user"].username
-
+        
         # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "chat_message", "message": message,'username': username}
         )
+        print('Receive message from WebSocket', text_data_json)
+
 
     # Receive message from room group
     async def chat_message(self, event):
-        message = event["message"]
-        username = event['username']
-
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({"message": message,'username': username}))
-
-    
+        message = event.get("message")
+        username = event.get("username")
+        await self.send(text_data=json.dumps({"message": message, "username": username}))
+        print('Receive message from room group', event)
